@@ -257,7 +257,6 @@ class Actor_Generator {
 		}
 		//start building the strings:
 		output.append(actor_name + "{\nprivate:\n");
-		//source_output.append("#include \"" + actor_name + ".hpp\"\n\n");
 		output.append("//imports\n");
 		output.append(imports);
 		output.append("//imports end\n\n");
