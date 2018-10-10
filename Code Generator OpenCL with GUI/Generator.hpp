@@ -2703,9 +2703,7 @@ public:
 };
 //initialize static variable
 int Actor_Generator::default_number_action{ 1 };
-/*
-keywords: actor, ==>, --> ,action,initialize, do , end, if, while, for, foreach, priority, schedule fsm,int,uint, String, bool, float, and half, :=, unit, import, guard, var, List, repeat, then, else if, procedure, function
-*/
+
 
 
 
