@@ -156,8 +156,11 @@ void CodeGeneratorOpenCLwithGUI::read_data(program_options *opt) {
 void CodeGeneratorOpenCLwithGUI::convert_network(program_options *opt) {
 	write_out("Reading the network...\n");
 	std::unique_ptr<Dataflow_Network> dpn(Init_Conversion::read_network(opt));
-	write_out("Converting native includes...\n");
-	std::string native_header_include = Init_Conversion::create_headers_for_native_code(opt);
+	std::string native_header_include;
+	if (!opt->native_includes.empty()) {
+		write_out("Creating headers for the native includes...\n");
+		native_header_include = Init_Conversion::create_headers_for_native_code(opt);
+	}
 	write_out("Creating the FIFO and Port file...\n");
 	Converter::create_FIFO(std::string{ opt->target_directory }, !opt->no_OpenCL);
 	if (!opt->no_OpenCL) {
@@ -168,5 +171,5 @@ void CodeGeneratorOpenCLwithGUI::convert_network(program_options *opt) {
 	Converter::convert_Actors(dpn.get(), opt, native_header_include, this);
 	write_out("Creating the main...\n");
 	Converter::create_main(dpn.get(), std::string{ opt->target_directory }+"\\main.cpp", opt);
-	write_out("Conversion from RVC to C++/SYCL was successful\n");
+	write_out("Conversion from RVC to C++/OpenCL was successful\n");
 }

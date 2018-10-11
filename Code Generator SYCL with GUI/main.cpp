@@ -23,10 +23,10 @@ program_options* parse_command_line_input(int argc, char *argv[]) {
 				"-s <number>        Specify the size of the FIFOs.\n"
 				"-d <directory>     Specify the directory of the RVC-CAL sources.\n"
 				"-n <file>          Specify the top network that shall be converted.\n"
+				"-cpu               Target CPU without the restriction to cores.\n"
 				"-c <number>        Target CPU with SYCL calls. Specify the number of cores to use.\n"
 				//"-infQ				If set, a dequeue based FIFO implementation is used.\n"
 				"-p         		If this flag is set, SYCL will not be used.\n";
-			//"-cmake             Flag to produce a CMake build.\n";
 			exit(0);
 		}
 		else if (strcmp(argv[i], "-w") == 0) {
@@ -51,6 +51,10 @@ program_options* parse_command_line_input(int argc, char *argv[]) {
 		else if (strcmp(argv[i], "-infQ") == 0) {
 			opt->infQ = true;
 		}
+		else if (strcmp(argv[i], "-cpu") == 0) {
+			opt->target_CPU = true;
+			opt->cores = 0;
+		}
 		else {
 			std::cout << "Error:Unknown input" << std::endl;
 			exit(0);
@@ -71,8 +75,11 @@ int main(int argc, char *argv[])
 		std::unique_ptr<program_options> opts(parse_command_line_input(argc, argv));
 		std::cout << "Reading the network...\n";
 		std::unique_ptr<Dataflow_Network> dpn(Init_Conversion::read_network(opts.get()));
-		std::cout << "Converting native includes...\n";
-		std::string native_header_include = Init_Conversion::create_headers_for_native_code(opts.get());
+		std::string native_header_include;
+		if (!opts->native_includes.empty()) {
+			std::cout << "Creating headers for the native includes...\n";
+			native_header_include = Init_Conversion::create_headers_for_native_code(opts.get());
+		}
 		std::cout << "Creating the FIFO file and writting the FIFO code...\n";
 		Converter::create_FIFO(std::string{ opts->target_directory }, !opts->no_SYCL, opts->infQ);
 		std::cout << "Converting the Actors...\n";

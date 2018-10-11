@@ -5,6 +5,9 @@
 #include "Initializer.hpp"
 #include "Converter.hpp"
 #include <algorithm> 
+#include "Datastructures.hpp"
+#include "Converter.hpp"
+#include "Initializer.hpp"
 
 
 CodeGeneratorGUI::CodeGeneratorGUI(QWidget *parent)
@@ -71,9 +74,15 @@ void CodeGeneratorGUI::convert() {
 };
 
 void CodeGeneratorGUI::read_data(program_options *opt) {
-	opt->target_CPU = ui.Target_CPU->isChecked();
+	if (ui.Target_CPU_Cores->isChecked()) {
+		opt->target_CPU = true;
+		opt->cores = ui.numberOfCores->text().toInt();
+	}
+	if (ui.Target_CPU_no_limit->isChecked()) {
+		opt->target_CPU = true;
+		opt->cores = 0;
+	}
 	opt->no_SYCL = ui.No_SYCL->isChecked();
-	//bool gpu = ui.Target_GPU->isChecked();
 
 	if (!ui.nativeFileInput_1->text().isEmpty()) {
 		QString nat{ ui.nativeFileInput_1->text() };
@@ -139,7 +148,7 @@ void CodeGeneratorGUI::read_data(program_options *opt) {
 	if (!ui.FIFO_SIZE->text().isEmpty()) {
 		opt->FIFO_size = ui.FIFO_SIZE->text().toInt();
 	}
-	opt->cores = ui.numberOfCores->text().toInt();
+
 
 	/*
 	//LOGGING for testing
@@ -165,8 +174,11 @@ void CodeGeneratorGUI::read_data(program_options *opt) {
 void CodeGeneratorGUI::convert_network(program_options *opt) {
 	write_out("Reading the network...\n");
 	std::unique_ptr<Dataflow_Network> dpn(Init_Conversion::read_network(opt));
-	write_out("Converting native includes...\n");
-	std::string native_header_include = Init_Conversion::create_headers_for_native_code(opt);
+	std::string native_header_include;
+	if (opt->native_includes.empty()) {
+		write_out("Creating headers for the native includes...\n");
+		native_header_include = Init_Conversion::create_headers_for_native_code(opt);
+	}
 	write_out("Creating the FIFO and Port file...\n");
 	Converter::create_FIFO(std::string{ opt->target_directory }, !opt->no_SYCL, opt->infQ);
 	write_out("Converting the Actors...\n");
