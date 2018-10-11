@@ -62,14 +62,10 @@ int main(int argc, char *argv[])
 		std::unique_ptr<program_options> opts(parse_command_line_input(argc, argv));
 		std::cout << "Reading the network...\n";
 		std::unique_ptr<Dataflow_Network> dpn(Init_Conversion::read_network(opts.get()));
-		std::string native_header_include;
 		if (!opts->native_includes.empty()) {
 			std::cout << "Creating headers for the native includes...\n";
-			native_header_include = Init_Conversion::create_headers_for_native_code(opts.get());
 		}
-		else{
-			native_header_include.append("extern \"C\" {\n}\n");
-		}
+		std::string	native_header_include = Init_Conversion::create_headers_for_native_code(opts.get());
 		std::cout << "Creating the FIFO file and writting the FIFO code...\n";
 		Converter::create_FIFO(std::string{ opts->target_directory }, !opts->no_OpenCL);
 		if (!opts->no_OpenCL) {
