@@ -161,6 +161,9 @@ void CodeGeneratorOpenCLwithGUI::convert_network(program_options *opt) {
 		write_out("Creating headers for the native includes...\n");
 		native_header_include = Init_Conversion::create_headers_for_native_code(opt);
 	}
+	else{
+		native_header_include.append("extern \"C\" {\n}\n");
+	}
 	write_out("Creating the FIFO and Port file...\n");
 	Converter::create_FIFO(std::string{ opt->target_directory }, !opt->no_OpenCL);
 	if (!opt->no_OpenCL) {

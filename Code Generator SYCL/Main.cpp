@@ -80,6 +80,9 @@ int main(int argc, char *argv[]) {
 		std::cout << "Creating headers for the native includes...\n";
 		native_header_include = Init_Conversion::create_headers_for_native_code(opts.get());
 	}
+	else{
+		native_header_include.append("extern \"C\" {\n}\n");
+	}
 	std::cout << "Creating the FIFO file and writting the FIFO code...\n";
 	Converter::create_FIFO(std::string{ opts->target_directory },!opts->no_SYCL,opts->infQ);
 	std::cout << "Converting the Actors...\n";
