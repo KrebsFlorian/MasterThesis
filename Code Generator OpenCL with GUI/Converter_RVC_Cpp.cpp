@@ -806,7 +806,7 @@ namespace Converter_RVC_Cpp {
 					tmp.append(t.str); // must be the parameter name
 				}
 				else {
-					output.append(t.str);
+					tmp.append(t.str);
 				}
 				t = token_producer.get_next_Token();
 			}
