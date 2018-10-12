@@ -2595,12 +2595,14 @@ class Actor_Generator {
 			//add OpenCL init to add_to_constructor string 
 			add_to_constructor.append("\t\tSetupOpenCL(&ocl, CL_DEVICE_TYPE_GPU, \"NVIDIA\");\n");
 			add_to_constructor.append("\t\tCreateAndBuildProgram(&ocl, \""+actor_name+".cl\");\n");
-			add_to_constructor.append("\t\tcl_int err;\n");
-			add_to_constructor.append("\t\tfor(int i = 0;i < " + std::to_string(actor_count) + ";++i){\n");
+			add_to_constructor.append("\t\tcl_int err = CL_SUCCESS;\n");
 			for (auto it = actor_index_to_kernel_name_map.begin(); it != actor_index_to_kernel_name_map.end(); ++it) {
-				add_to_constructor.append("\t\t\tocl.kernels[" + std::to_string(it->first) + "] = clCreateKernel(ocl.program, \"" + it->second + "\", &err);\n");
+				add_to_constructor.append("\t\tocl.kernels.push_back(clCreateKernel(ocl.program, \"" + it->second + "\", &err));\n");
+				add_to_constructor.append("\t\tif(err != CL_SUCCESS) {\n");
+				add_to_constructor.append("\t\t\tstd::cout << \"Kernel Creation failed. clCreateKernel for " + it->second + "  in  " + actor_name + " returned \" << TranslateErrorCode(err);\n");
+				add_to_constructor.append("\t\t\texit(err);\n");
+				add_to_constructor.append("\t\t}\n");
 			}
-			add_to_constructor.append("\t\t}\n");
 		}
 		std::string output{ "\t" + actor_name + "(" };
 		std::string initializer_list{ ") : " };
