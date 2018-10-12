@@ -591,9 +591,6 @@ namespace Converter_RVC_Cpp {
 			return return_value;
 		}
 
-
-
-
 		std::string convert_list_comprehension(Token& t, Token_Container& token_producer, std::string list_name, std::map<std::string, std::string>& global_map, std::map<std::string, std::string>& local_map, std::string prefix = "", std::string outer_expression = "", bool nested = false) {
 			//find whitespaces and remove them, because it doesn't look nice
 			while (list_name.find(" ") != std::string::npos) {
@@ -1123,7 +1120,7 @@ namespace Converter_RVC_Cpp {
 					output.append(convert_inline_if_with_list_assignment(tmp.first, global_map, local_map, prefix, symbol_name));
 				}
 				else {
-					output.append(convert_inline_if(t, token_producer).first);
+					output.append(tmp.first);
 					output.append(";\n");
 				}
 			}
@@ -1217,7 +1214,7 @@ namespace Converter_RVC_Cpp {
 					output.append(convert_inline_if_with_list_assignment(tmp.first, global_map, local_map, prefix, symbol_name));
 				}
 				else {
-					output.append(convert_inline_if(t, token_producer).first);
+					output.append(tmp.first);
 					output.append(";\n");
 				}
 			}

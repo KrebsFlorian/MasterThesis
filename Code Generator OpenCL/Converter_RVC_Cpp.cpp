@@ -1120,7 +1120,7 @@ namespace Converter_RVC_Cpp {
 					output.append(convert_inline_if_with_list_assignment(tmp.first, global_map, local_map, prefix, symbol_name));
 				}
 				else {
-					output.append(convert_inline_if(t, token_producer).first);
+					output.append(tmp.first);
 					output.append(";\n");
 				}
 			}
@@ -1214,7 +1214,7 @@ namespace Converter_RVC_Cpp {
 					output.append(convert_inline_if_with_list_assignment(tmp.first, global_map, local_map, prefix, symbol_name));
 				}
 				else {
-					output.append(convert_inline_if(t, token_producer).first);
+					output.append(tmp.first);
 					output.append(";\n");
 				}
 			}

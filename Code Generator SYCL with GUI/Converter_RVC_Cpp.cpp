@@ -490,6 +490,7 @@ namespace Converter_RVC_Cpp {
 		return convert_inline_if_with_list_assignment(t, tok, global_map, local_map, prefix, outer_expression);
 	}
 
+
 		std::pair<std::string,bool> convert_inline_if(Token& t, Token_Container& token_producer) {
 			std::string output{};
 			std::string previous_token_string;
@@ -561,6 +562,7 @@ namespace Converter_RVC_Cpp {
 			}
 			return output;
 		}
+
 
 
 		std::string convert_list_comprehension(Token& t, Token_Container& token_producer, std::string list_name, std::map<std::string, std::string>& global_map, std::map<std::string, std::string>& local_map, std::string prefix = "", std::string outer_expression = "", bool nested = false) {
@@ -841,18 +843,23 @@ namespace Converter_RVC_Cpp {
 			while (t.str != "end") {
 				if (t.str == "var" || t.str == "begin" || t.str == "do" || t.str == ":")t = token_producer.get_next_Token();
 				else if (t.str == "if") {
+					//std::cout << "If\n";
 					output.append(convert_if(t, token_producer, global_map, local_map, false, prefix + "\t"));
 				}
 				else if (t.str == "for" || t.str == "foreach") {
+					//std::cout << "For\n";
 					output.append(convert_for(t, token_producer, global_map, local_map, false, prefix + "\t"));
 				}
 				else if (t.str == "while") {
+					//std::cout << "While\n";
 					output.append(convert_while(t, token_producer, global_map, local_map, false, prefix + "\t"));
 				}
 				else if (t.str == "list" || t.str == "List") {
+					//std::cout << "List\n";
 					output.append(convert_list(t, token_producer, global_map, local_map, "*", prefix + "\t"));
 				}
 				else { 
+					//std::cout << "Expr " << t.str << std::endl;;
 					output.append(convert_expression(t, token_producer, global_map, local_map, "*", false, prefix + "\t")); 
 				}
 			}
@@ -1091,7 +1098,7 @@ namespace Converter_RVC_Cpp {
 					output.append(convert_inline_if_with_list_assignment(tmp.first, global_map, local_map, prefix, symbol_name));
 				}
 				else {
-					output.append(convert_inline_if(t, token_producer).first);
+					output.append(tmp.first);
 					output.append(";\n");
 				}
 			}
@@ -1185,7 +1192,7 @@ namespace Converter_RVC_Cpp {
 					output.append(convert_inline_if_with_list_assignment(tmp.first, global_map, local_map, prefix, symbol_name));
 				}
 				else {
-					output.append(convert_inline_if(t, token_producer).first);
+					output.append(tmp.first);
 					output.append(";\n");
 				}
 			}
@@ -1250,9 +1257,6 @@ namespace Converter_RVC_Cpp {
 					t = token_producer.get_next_Token();
 				}
 			}
-			//if (type_specified) {//if there is no further initialization, but a variable has been defined then in C++ there must be initialization, therefore the default initialization action in C++ is used
-				//output.append("{}");
-			//}
 			output.append(";\n");
 		}
 		if (t.str == ";" || t.str == ",") {
