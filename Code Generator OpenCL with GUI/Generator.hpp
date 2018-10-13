@@ -1604,7 +1604,7 @@ class Actor_Generator {
 				for (auto it = output_fifo_expr.begin(); it != output_fifo_expr.end(); ++it) {
 					output.append(prefix + "for(int i = 0;i < " + std::to_string(repeat_count) + ";i++){\n");
 					output.append(prefix + "\t" + name + "$ptr[" + name + "$index++] = " + *it + "[i];\n");
-					output.append(prefix + "};\n");
+					output.append(prefix + "}\n");
 				}
 			}
 			else {
