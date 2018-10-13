@@ -157,7 +157,7 @@ void Converter::convert_Cpp_to_OCL(std::string *cpp_code, std::string output_pat
 		}
 	}
 
-	std::regex r_const("\tconst .*?;\n");
+	std::regex r_const("^\tconst .*?;\n");
 	output = std::regex_replace(output, r_const, "");
 	output.replace(output.find("//imports"), 9, "");
 	output.replace(output.find("//imports end"), 13, "");
