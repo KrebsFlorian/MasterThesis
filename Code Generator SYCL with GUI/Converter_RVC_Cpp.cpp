@@ -838,7 +838,7 @@ namespace Converter_RVC_Cpp {
 				}
 				t = token_producer.get_next_Token();
 			}
-			output.append("){\n");
+			output.append(") {\n");
 			t = token_producer.get_next_Token();
 			while (t.str != "end") {
 				if (t.str == "var" || t.str == "begin" || t.str == "do" || t.str == ":")t = token_producer.get_next_Token();
