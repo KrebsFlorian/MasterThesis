@@ -6,6 +6,15 @@
 #include <regex>
 #include <set>
 
+size_t find_insert_point_before_if(std::string& str,std::string str_to_find) {
+	size_t pos = str.find(str_to_find);
+	while (str.find(str_to_find, pos + 1) != std::string::npos) {
+		pos = str.find(str_to_find, pos + 1);
+	}
+
+	return str.rfind("\n", pos) + 1;
+}
+
 std::string read_brace(Token& t, Tokenizer& token_producer) {
 	std::string output{ "{" };
 	t = token_producer.get_next_Token();
@@ -41,7 +50,13 @@ void remove_duplicates_in_scope(Token &t, Tokenizer& token_producer,std::map<std
 	std::string line{ local_prefix };
 	while (t.str != "}") {
 		if (symbol_expr_map.count(t.str) > 0 && known_symbols_this_scope.find(t.str) == known_symbols_this_scope.end()) {
-			output.append(local_prefix +" "+ symbol_expr_map[t.str] + "\n");
+			//check if it is in a condition block of an else if, if yes it cannot be inserted before this line because it would be in between the if(){} and the else if(){}. This would cause an error.
+			if (line.find("\telse if(") != std::string::npos) {
+				output.insert(find_insert_point_before_if(output,"\n"+local_prefix+"if("),local_prefix+ symbol_expr_map[t.str] + "\n");
+			}
+			else {
+				output.append(local_prefix + symbol_expr_map[t.str] + "\n");
+			}
 			known_symbols_this_scope.insert(t.str);
 			line.append(" " + t.str);
 			t = token_producer.get_next_Token();
