@@ -704,7 +704,7 @@ class Actor_Generator {
 	}
 
 	/*
-	This function generates a function that uses SYCL to execute actions in parallel.
+	This function generates a function that uses OpenCL to execute actions in parallel.
 	But it can only be used if all actions consume and produce the same amount of tokens. (Use function actions_with_guards_parallelizable first)
 	This functions creates one sycl kernel for all actions. This kernel can fire exactly one action due to the scheduling conditions that are checked before execution.
 	The created code is returned as a string.
@@ -753,6 +753,7 @@ class Actor_Generator {
 		}
 		//create function declaration 
 		output.append(prefix+"void action_" + actor_name + "() {\n");
+		cl_function_head.append("__kernel action_" + actor_name + "(");
 		actor_index_to_kernel_name_map[actor_count] = "action_"+actor_name;
 		//insert action into the actionName Scheduling Condition map, otherwise the scheduler doesn't recognize it
 		std::string condition;
@@ -947,10 +948,10 @@ class Actor_Generator {
 		end_of_output.append(prefix + "}\n");
 		return std::make_pair(method_name, output + end_of_output);
 	}
-	//----------------------------- generate Cpp and SYCL code for cyclic FSMs ---------------------------------
+	//----------------------------- generate Cpp and OpenCL code for cyclic FSMs ---------------------------------
 	/*
-	This function builds the action containing a complete FSM cycle accelerated by SYCL.
-	The map where the method name is mapped to the (action information, SYCL code for the action) pair is used here.
+	This function builds the action containing a complete FSM cycle accelerated by OpenCL.
+	The map where the method name is mapped to the (action information, OpenCL code for the action) pair is used here.
 	Prefix is the prefix that is inserted before each new line of code to achieve a correct format.
 	The function returns the code to execute a complete FSM cycle.
 	*/
@@ -1024,7 +1025,7 @@ class Actor_Generator {
 
 		}
 		output.append(number_inst_condition + "});\n");
-		//create SYCL call - go through one complete cycle and read the previously generated sycl code from the map and append it to the code of the previously read actions.
+		//create OpenCL call - go through one complete cycle and read the previously generated sycl code from the map and append it to the code of the previously read actions.
 		std::string OpenCL_Code;
 		for (auto state_it = states.begin(); state_it != states.end(); ++state_it) {
 			if (state_it == states.begin()) {
