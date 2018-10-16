@@ -6,6 +6,16 @@
 #include <regex>
 #include <set>
 
+
+void replace_str(std::string &str, std::string old_str, std::string new_str) {
+	size_t pos = str.find(old_str);
+	while (pos != std::string::npos) {
+		str.replace(pos, old_str.size(), new_str);
+		pos = str.find(old_str, pos + new_str.size()+1);
+	}
+}
+
+
 size_t find_insert_point_before_if(std::string& str,std::string str_to_find) {
 	size_t pos = str.find(str_to_find);
 	while (str.find(str_to_find, pos + 1) != std::string::npos) {
@@ -187,6 +197,20 @@ void Converter::convert_Cpp_to_OCL(std::string *cpp_code, std::string output_pat
 		final_output.append(" }\n");
 		token = token_producer2.get_next_Token();
 	}
+	
+	//replace some possibilities that occur in the samples, but this should actually be done for all key words in OpenCL
+	replace_str(final_output, "constant", "constant$replace");
+	if (final_output.find("int min(") != std::string::npos || final_output.find("char min(") != std::string::npos || final_output.find("long min(") != std::string::npos || final_output.find("short min(") != std::string::npos || final_output.find("float min(") != std::string::npos || final_output.find("double min(") != std::string::npos) {
+		//assume the min function is defined
+		replace_str(final_output, " min(", " min$replace(");
+		replace_str(final_output, "=min(", "= min$replace(");
+	}
+	if (final_output.find("int max(") != std::string::npos || final_output.find("char max(") != std::string::npos || final_output.find("long max(") != std::string::npos || final_output.find("short max(") != std::string::npos || final_output.find("float max(") != std::string::npos || final_output.find("double max(") != std::string::npos) {
+		//assume the min function is defined
+		replace_str(final_output, " max(", " max$replace(");
+		replace_str(final_output, "=max(", "= max$replace(");
+	}
+	
 
 	std::ofstream cl_output{ output_path };
 	if (cl_output.bad()) {
