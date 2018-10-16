@@ -317,12 +317,12 @@ void Converter::create_main(Dataflow_Network *dpn, std::string path, program_opt
 	for (auto it = dpn->id_constructor_map.begin(); it != dpn->id_constructor_map.end(); ++it) {
 		Converted_Actor actor_inf = it->second;
 		if (actor_inf.OpenCL) {
-			first_part.append(actor_inf.class_name + "::" + actor_inf.class_name + " *" + it->first+";\n");
-			second_part.append("\t"+it->first+" = new "+ actor_inf.class_name + "::" + actor_inf.class_name+"{");
+			first_part.append(actor_inf.class_name + "::" + actor_inf.class_name + " *" + it->first+"_instance;\n");
+			second_part.append("\t"+it->first+"_instance = new "+ actor_inf.class_name + "::" + actor_inf.class_name+"{");
 		}
 		else {
-			first_part.append(actor_inf.class_name + " *" + it->first + ";\n");
-			second_part.append("\t" + it->first + " = new " + actor_inf.class_name + "{");
+			first_part.append(actor_inf.class_name + " *" + it->first + "_instance;\n");
+			second_part.append("\t" + it->first + "_instance = new " + actor_inf.class_name + "{");
 		}
 		for (auto param = actor_inf.constructor_parameter_type_order.begin(); param != actor_inf.constructor_parameter_type_order.end(); ++param) {
 			if (param == actor_inf.constructor_parameter_type_order.begin()) {
@@ -368,14 +368,14 @@ void Converter::create_main(Dataflow_Network *dpn, std::string path, program_opt
 			first_part.append("\t\t\t\tupdate_buffer_" + *it + " = false;\n");
 			first_part.append("\t\t\t}\n");//close inner if
 			//call scheduler
-			first_part.append("\t\t\t" + *it + "_status = " + *it + "->schedule(queue, update_buffer_"+*it+");\n");
+			first_part.append("\t\t\t" + *it + "_status = " + *it + "_instance->schedule(queue, update_buffer_"+*it+");\n");
 			first_part.append("\t\t\t" + *it + "_running.clear();\n");
 			first_part.append("\t\t}\n"); //close outer if
 		}
 		else {
 			//check if it is running, if not than start an async thread with the actor
 			first_part.append("\t\tif(!" + *it + "_running.test_and_set()){\n");
-			first_part.append("\t\t\t" + *it + "->schedule();\n");
+			first_part.append("\t\t\t" + *it + "_instance->schedule();\n");
 			first_part.append("\t\t\t"+*it+"_running.clear();\n");
 			first_part.append("\t\t}\n");
 		}
