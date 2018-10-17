@@ -1675,6 +1675,14 @@ class Actor_Generator {
 							expr.append(t.str);
 							t = token_producer.get_next_Token();
 						}
+						else if (t.str == "(") {
+							while (t.str != ")") {
+								expr.append(t.str);
+								t = token_producer.get_next_Token();
+							}
+							expr.append(t.str);
+							t = token_producer.get_next_Token();
+						}
 						else if (t.str == "if") {
 							auto tmp = convert_inline_if(t, token_producer);
 							if (tmp.second) {
@@ -2153,6 +2161,14 @@ class Actor_Generator {
 					while (t.str != "," && t.str != "]") {
 						if (t.str == "[") {
 							while (t.str != "]") {
+								expr.append(t.str);
+								t = token_producer.get_next_Token();
+							}
+							expr.append(t.str);
+							t = token_producer.get_next_Token();
+						}
+						else if (t.str == "(") {
+							while (t.str != ")") {
 								expr.append(t.str);
 								t = token_producer.get_next_Token();
 							}
