@@ -302,47 +302,9 @@ Dataflow_Network* Init_Conversion::read_network(program_options *opt) {
 	Dataflow_Network *dpn = new Dataflow_Network;
 	std::string str{ opt->network_file };
 	start_parsing(str, opt->source_directory, dpn);
-	/*std::ofstream log{ "E:\\connection_log.txt" };
-	for (auto it = dpn->connections.begin(); it != dpn->connections.end(); ++it) {
-	log << "Src:" << it->src_id << " Port:" << it->src_port << " Dst:" << it->dst_id << " Port:" << it->dst_port;
-	log << " Src network instance port:";
-	if (it->src_network_instance_port) {
-	log << "True";
-	}
-	else {
-	log << "False";
-	}
-	log << " Dst network instance port:";
-	if (it->dst_network_instance_port) {
-	log << "True";
-	}
-	else {
-	log << "False";
-	}
-	log << std::endl;
-	}
-	log << std::endl << std::endl << "After removing Network Instance Ports:" << std::endl << std::endl;*/
 	while (are_network_instance_ports_present(dpn)) {
 		remove_network_instance_connections(dpn);
 	}
-	/*for (auto it = dpn->connections.begin(); it != dpn->connections.end(); ++it) {
-	log << "Src:" << it->src_id << " Port:" << it->src_port << " Dst:" << it->dst_id << " Port:" << it->dst_port;
-	log << " Src network instance port:";
-	if (it->src_network_instance_port) {
-	log << "True";
-	}
-	else {
-	log << "False";
-	}
-	log << " Dst network instance port:";
-	if (it->dst_network_instance_port) {
-	log << "True";
-	}
-	else {
-	log << "False";
-	}
-	log << std::endl;
-	}*/
 	return dpn;
 };
 
