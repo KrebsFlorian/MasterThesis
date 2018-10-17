@@ -202,9 +202,12 @@ void Converter::create_main(Dataflow_Network *dpn, std::string path, program_opt
 	std::string second_part;
 	std::string first_part{ };
 	first_part.append("#include <iostream>\n");
-	
+	std::set<std::string> includes;
 	for (auto it = dpn->id_constructor_map.begin(); it != dpn->id_constructor_map.end(); ++it) {
-		first_part.append("#include \"" + it->second.class_name + ".hpp\"\n");
+		includes.insert("#include \"" + it->second.class_name + ".hpp\"\n");
+	}
+	for (auto it = includes.begin(); it != includes.end(); ++it) {
+		first_part.append(*it);
 	}
 	first_part.append("#include \"ORCC_Header.h\"\n");
 	first_part.append("#include <atomic> \n");
