@@ -246,9 +246,11 @@ void start_parsing(std::string& start, const char *path,Dataflow_Network *dpn,st
 	doc.parse<0>(buffer);
 	parse_network(doc.first_node(), path,dpn,prefix);
 }
-
-bool are_network_instance_ports_present(Dataflow_Network *dpn) {
-	for (auto connection = dpn->connections.begin(); connection != dpn->connections.end(); ++connection) {
+/*
+	This function checks whether there are still ports of network instances left in the list of the connections.
+*/
+bool are_network_instance_ports_present(std::vector<Connection>& connections) {
+	for (auto connection = connections.begin(); connection != connections.end(); ++connection) {
 		if (connection->dst_network_instance_port || connection->src_network_instance_port) {
 			return true;
 		}
@@ -257,39 +259,51 @@ bool are_network_instance_ports_present(Dataflow_Network *dpn) {
 }
 
 /*
-	This function removes all connections between an actor and ports of a network and replaces them by direct actor to actor connects without the network ports in between.
-
+	This function creates a vector with all connections that are between two actors or starting at an actor and going to a network port.
 */
-void remove_network_instance_connections(Dataflow_Network *dpn) {
-	std::vector<Connection> new_connection_vector;
-	for (auto c = dpn->connections.begin(); c != dpn->connections.end(); ++c) {
-		bool delete_connection{ false };
-		if (network_instance_ids.find(c->dst_id) != network_instance_ids.end() || network_instance_ids.find(c->src_id) != network_instance_ids.end()) {
-			delete_connection = true;
+std::vector<Connection> find_start_connections(Dataflow_Network *dpn) {
+	std::vector<Connection> return_value;
+	for (auto it = dpn->connections.begin(); it != dpn->connections.end(); ++it) {
+		if (!it->dst_network_instance_port && !it->src_network_instance_port) {
+			return_value.push_back(*it);
 		}
-		for (auto cc = dpn->connections.begin(); cc != dpn->connections.end(); ++cc) {
-			if ((*c).dst_id == (*cc).src_id && (*c).dst_port == (*cc).src_port) {
-				delete_connection = true;
-				Connection connect;
-				connect.dst_id = (*cc).dst_id;
-				connect.dst_port = (*cc).dst_port;
-				connect.dst_network_instance_port = cc->dst_network_instance_port;
-				connect.src_id = (*c).src_id;
-				connect.src_port = (*c).src_port;
-				connect.src_network_instance_port = c->src_network_instance_port;
-				connect.specified_size = std::max(c->specified_size,cc->specified_size);
-				new_connection_vector.push_back(connect);
-			}
-			else if ((*cc).dst_id == (*c).src_id && (*cc).dst_port == (*c).src_port) {
-				delete_connection = true;
-			}
-		}
-		if (!delete_connection) {
-			new_connection_vector.push_back(*c);
+		else if (it->dst_network_instance_port && !it->src_network_instance_port) {
+			return_value.push_back(*it);
 		}
 	}
-	dpn->connections = new_connection_vector;
+	return return_value;
 }
+
+/*
+	This function connects connections that are going to a network port with another connection that are starting with the network port and combines these two to one connection.
+	This connection is added to the output along with the connections between two actors.
+*/
+std::vector<Connection> connection_network_ports(Dataflow_Network *dpn, std::vector<Connection>& new_connections) {
+	std::vector<Connection> return_value;
+	for (auto it = new_connections.begin(); it != new_connections.end(); ++it) {
+		if (it->dst_network_instance_port) {
+			for (auto connec_it = dpn->connections.begin(); connec_it != dpn->connections.end(); ++connec_it) {
+				if (it->dst_id == connec_it->src_id && it->dst_port == connec_it->src_port) {
+					Connection connect;
+					connect.dst_id = connec_it->dst_id;
+					connect.dst_port = connec_it->dst_port;
+					connect.dst_network_instance_port = connec_it->dst_network_instance_port;
+					connect.src_id = it->src_id;
+					connect.src_port = it->src_port;
+					connect.src_network_instance_port = it->src_network_instance_port;
+					connect.specified_size = std::max(it->specified_size, connec_it->specified_size);
+					return_value.push_back(connect);
+				}
+			}
+		}
+		else {
+			return_value.push_back(*it);
+		}
+	}
+	return return_value;
+}
+
+
 
 /*
 	This function parses the complete network and removes all network instances and replaces them by 
@@ -302,9 +316,12 @@ Dataflow_Network* Init_Conversion::read_network(program_options *opt) {
 	Dataflow_Network *dpn = new Dataflow_Network;
 	std::string str{ opt->network_file };
 	start_parsing(str,opt->source_directory,dpn);
-	while (are_network_instance_ports_present(dpn)) {
-		remove_network_instance_connections(dpn);
+	std::vector<Connection> starting_point{ find_start_connections(dpn) };
+	while (are_network_instance_ports_present(starting_point)) {
+		starting_point = connection_network_ports(dpn, starting_point);
+
 	}
+	dpn->connections = starting_point;
 	return dpn;
 };
 
