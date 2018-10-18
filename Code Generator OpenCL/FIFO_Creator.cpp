@@ -135,8 +135,8 @@ void Converter::create_FIFO(std::string path,bool OpenCL) {
 		"#include <initializer_list>\n"
 		"#include <functional>\n"
 		"#include \"FIFO.hpp\"\n"
-		"#include \"CL\\cl.h\"\n"
-		"#include \"Utils.h\"\n"
+		"#include <CL\\cl.hpp>\n"
+		"#include \"Utils.hpp\"\n"
 		"using namespace std;\n\n"
 
 

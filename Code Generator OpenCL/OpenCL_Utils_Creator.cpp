@@ -5,10 +5,10 @@
 void create_OpenCL_arguments_struct(const std::string &path) {
 
 	std::string header = "#pragma once\n"
-		"#include \"Translation.h\"\n"
-		"#include <stdio.h>\n"
-		"#include <vector>\n\n"
+		"#include <vector>\n"
+		"#include <CL\\cl.hpp>\n\n"
 
+		
 		"#define OPENCL_VERSION_1_2  1.2f\n"
 		"#define OPENCL_VERSION_2_0  2.0f\n\n"
 
@@ -30,7 +30,10 @@ void create_OpenCL_arguments_struct(const std::string &path) {
 		"\tsize_t          localWorkSize[1];\n"
 		"\tcl_int          work_Dim;"
 		"};\n";
-	std::string source = "#include \"opencl_arguments.h\"\n\n"
+	std::string source = "#include \"opencl_arguments.h\"\n"
+		"#include \"Translation.h\"\n"
+		"#include <iostream>\n\n"
+					
 		"opencl_arguments::opencl_arguments() :\n"
 		"context(NULL),\n"
 		"device(NULL),\n"
@@ -42,44 +45,44 @@ void create_OpenCL_arguments_struct(const std::string &path) {
 	"{ }\n\n"
 
 		"opencl_arguments::~opencl_arguments() {\n"
-		"\tcl_int err = CL_SUCCESS;\n"
+		"\tcl_int errorCode = CL_SUCCESS;\n"
 		"\tfor(int i = 0; i < kernels.size(); ++i) {\n"
 		"\t\tif (kernels[i]) {\n"
-			"\t\t\terr = clReleaseKernel(kernels[i]);\n"
-			"\t\t\tif (CL_SUCCESS != err) {\n"
-				"\t\t\t\tprintf(\"Error: clReleaseKernel returned '%s'.\\n\", TranslateErrorCode(err));\n"
+			"\t\t\terrorCode = clReleaseKernel(kernels[i]);\n"
+			"\t\t\tif (errorCode != CL_SUCCESS) {\n"
+				"\t\t\t\tstd::cout << \"Error: clReleaseKernel returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\t\t}\n"
 		"\t\t}\n"
 		"\t}\n"
 		"\tif (program) {\n"
-			"\t\terr = clReleaseProgram(program);\n"
-			"\t\tif (CL_SUCCESS != err) {\n"
-				"\t\t\tprintf(\"Error: clReleaseProgram returned '%s'.\\n\", TranslateErrorCode(err));\n"
+			"\t\terrorCode = clReleaseProgram(program);\n"
+			"\t\tif (errorCode != CL_SUCCESS) {\n"
+				"\t\t\tstd::cout << \"Error: clReleaseProgram returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\t}\n"
 		"\t}\n"
 		"\tif (commandQueue) {\n"
-			"\t\terr = clReleaseCommandQueue(commandQueue);\n"
-			"\t\tif (CL_SUCCESS != err) {\n"
-				"\t\t\tprintf(\"Error: clReleaseCommandQueue returned '%s'.\\n\", TranslateErrorCode(err));\n"
+			"\t\terrorCode = clReleaseCommandQueue(commandQueue);\n"
+			"\t\tif (errorCode != CL_SUCCESS) {\n"
+				"\t\t\tstd::cout << \"Error: clReleaseCommandQueue returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\t}\n"
 		"\t}\n"
 		"\tif (device) {\n"
-			"\t\terr = clReleaseDevice(device);\n"
-			"\t\tif (CL_SUCCESS != err) {\n"
-				"\t\t\tprintf(\"Error: clReleaseDevice returned '%s'.\\n\", TranslateErrorCode(err));\n"
+			"\t\terrorCode = clReleaseDevice(device);\n"
+			"\t\tif (errorCode != CL_SUCCESS) {\n"
+				"\t\t\tstd::cout << \"Error: clReleaseDevice returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\t}\n"
 		"\t}\n"
 		"\tif (context) {\n"
-			"\t\terr = clReleaseContext(context);\n"
-			"\t\tif (CL_SUCCESS != err) {\n"
-				"\t\t\tprintf(\"Error: clReleaseContext returned '%s'.\\n\", TranslateErrorCode(err));\n"
+			"\t\terrorCode = clReleaseContext(context);\n"
+			"\t\tif (errorCode != CL_SUCCESS) {\n"
+				"\t\t\tstd::cout << \"Error: clReleaseContext returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\t}\n"
 		"\t}\n"
 	"}";
 
 	std::ofstream output_header{ path + "\\opencl_arguments.h" };
 	if (output_header.bad()) {
-		throw Converter_RVC_Cpp::Converter_Exception{ "Cannot open the file " + path + "\\opencl_arguments.h" };
+		throw Converter_RVC_Cpp::Converter_Exception{ "Cannot open the file " + path + "\\opencl_arguments.hpp" };
 	}
 	output_header << header;
 
@@ -93,12 +96,13 @@ void create_OpenCL_arguments_struct(const std::string &path) {
 
 void create_Translation_Files(const std::string &path) {
 	std::string header = "#pragma once\n"
-				"#include \"CL\\cl.h\"\n\n"
-				"const char* TranslateErrorCode(cl_int errorCode);\n\n"
-				"const char* TranslateDeviceType(cl_device_type deviceType);\n\n"
-				"const char* TranslateMemFlag(cl_mem_flags flag);";
-	std::string source = "#include \"Translation.h\"\n\n"			
-		"const char* TranslateMemFlag(cl_mem_flags flag) {\n"
+				"#include <string>\n"
+				"#include <CL\\cl.hpp>\n\n"
+				"std::string TranslateErrorCode(cl_int errorCode);\n\n"
+				"std::string TranslateDeviceType(cl_device_type deviceType);\n\n"
+				"std::string TranslateMemFlag(cl_mem_flags flag);";
+	std::string source = "#include \"Translation.hpp\"\n\n"			
+		"std::string TranslateMemFlag(cl_mem_flags flag) {\n"
 		"\tswitch (flag) {\n"
 		"\tcase CL_MEM_ALLOC_HOST_PTR: return \"CL_MEM_ALLOC_HOST_PTR\";\n"
 		"\tcase CL_MEM_COPY_HOST_PTR:  return \"CL_MEM_COPY_HOST_PTR\";\n"
@@ -107,19 +111,19 @@ void create_Translation_Files(const std::string &path) {
 		"\t}\n"
 	"}\n\n"
 
-	"const char* TranslateDeviceType(cl_device_type deviceType)	{\n"
+	"std::string TranslateDeviceType(cl_device_type deviceType)	{\n"
 		"switch (deviceType) {\n"
 		"case CL_DEVICE_TYPE_DEFAULT:      return \"CL_DEVICE_TYPE_DEFAULT\";\n"
 		"case CL_DEVICE_TYPE_CPU:          return \"CL_DEVICE_TYPE_CPU\";\n"
 		"case CL_DEVICE_TYPE_GPU:          return \"CL_DEVICE_TYPE_GPU\";\n"
 		"case CL_DEVICE_TYPE_ACCELERATOR:  return \"CL_DEVICE_TYPE_ACCELERATOR\";\n"
 		"case CL_DEVICE_TYPE_ALL:          return \"CL_DEVICE_TYPE_ALL\";\n"
-		"default:						  return \"UNKNOWN DEVICE TYPE\";\n"
+		"default:						   return \"UNKNOWN DEVICE TYPE\";\n"
 		"}\n"
 	"}\n\n"
 
 
-	"const char* TranslateErrorCode(cl_int errorCode) {\n"
+	"std::string TranslateErrorCode(cl_int errorCode) {\n"
 		"\tswitch (errorCode) {\n"
 		"\tcase CL_SUCCESS:										return \"CL_SUCCESS\";\n"
 		"\tcase CL_DEVICE_NOT_FOUND:							return \"CL_DEVICE_NOT_FOUND\";\n"
@@ -186,9 +190,9 @@ void create_Translation_Files(const std::string &path) {
 		"\t}\n"
 	"}";
 
-	std::ofstream output_header{ path + "\\Translation.h" };
+	std::ofstream output_header{ path + "\\Translation.hpp" };
 	if (output_header.bad()) {
-		throw Converter_RVC_Cpp::Converter_Exception{ "Cannot open the file " + path + "\\Translation.h" };
+		throw Converter_RVC_Cpp::Converter_Exception{ "Cannot open the file " + path + "\\Translation.hpp" };
 	}
 	output_header << header;
 
@@ -202,13 +206,7 @@ void create_Translation_Files(const std::string &path) {
 
 void create_Utils_Files(const std::string &path) {
 	std::string header = "#pragma once\n"
-			"#include \"Translation.h\"\n"
-			"#include \"opencl_arguments.h\"\n"
-			"#include <memory.h>\n"
-			"#include \"CL\\cl.h\"\n"
-			"#include \"CL\\cl_ext.h\"\n"
-			"#include <assert.h>\n"
-			"#include <vector>\n\n"
+			"#include \"opencl_arguments.hpp\"\n\n"
 
 			"//Parts of the Source Code from intel template\n"
 			"cl_int SetupOpenCL(opencl_arguments *ocl, cl_device_type deviceType, const char* platformName);\n"
@@ -225,7 +223,9 @@ void create_Utils_Files(const std::string &path) {
 
 			"cl_device_id findDeviceID(int id);";
 
-	std::string source = "#include \"utils.h\" \n\n "
+	std::string source = "#include \"utils.hpp\" \n "
+		"#include <stdio.h>\n"
+		"#include \"Translation.hpp\"\n\n"
 
 		"cl_int ReadSourceFromFile(const char* fileName, char** source, size_t* sourceSize) {\n"
 		"\tcl_int errorCode = CL_SUCCESS;\n"
@@ -233,7 +233,7 @@ void create_Utils_Files(const std::string &path) {
 		"\tFILE* fp = NULL;\n"
 		"\tfopen_s(&fp, fileName, \"rb\");\n"
 		"\tif (fp == NULL) {\n"
-			"\t\tprintf(\"Error: Couldn't find program source file '%s'.\\n\", fileName);\n"
+			"\t\tstd::cout << \"Error: Couldn't find program source file \" << fileName << std::endl;\n"
 			"\t\terrorCode = CL_INVALID_VALUE;\n"
 		"\t}\n"
 		"\telse {\n"
@@ -243,7 +243,7 @@ void create_Utils_Files(const std::string &path) {
 
 			"\t\t*source = new char[*sourceSize];\n"
 			"\t\tif (*source == NULL) {\n"
-				"\t\t\tprintf(\"Error: Couldn't allocate %d bytes for program source from file '%s'.\\n\", *sourceSize, fileName);\n"
+				"\t\t\tstd::cout << \"Error: Couldn't allocate \" << *sourceSize << \" bytes for program source from file \" << fileName << std::endl;\n"
 				"\t\t\terrorCode = CL_OUT_OF_HOST_MEMORY;\n"
 			"\t\t}\n"
 			"\t\telse {\n"
@@ -254,17 +254,17 @@ void create_Utils_Files(const std::string &path) {
 	"}\n\n"
 
 
-	"cl_platform_id FindOpenCLPlatform(cl_device_type deviceType,const char* platformName) {\n"
+	"cl_platform_id FindOpenCLPlatform(cl_device_type deviceType,std::string platformName) {\n"
 		"\tcl_int errorCode = CL_SUCCESS;\n"
 		"\tcl_uint numPlatforms = 0;\n"
 		"\terrorCode = clGetPlatformIDs(0, NULL, &numPlatforms);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetplatform_ids() to get num platforms returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetplatform_ids() to get num platforms returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn NULL;\n"
 		"\t}\n"
 
 		"\tif (numPlatforms == 0) {\n"
-			"\t\tprintf(\"Error: No platforms found!\\n\");\n"
+			"\t\tstd::cout << \"Error: No platforms found!\" << std::endl;\n"
 			"\t\treturn NULL;\n"
 		"\t}\n"
 
@@ -272,7 +272,7 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetPlatformIDs(numPlatforms, &platforms[0], NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetplatform_ids() to get platforms returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::string << \"Error: clGetplatform_ids() to get platforms returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn NULL;\n"
 		"\t}\n\n"
 
@@ -282,7 +282,7 @@ void create_Utils_Files(const std::string &path) {
 			"\t\tsize_t stringLength = 0;\n"
 			"\t\terrorCode = clGetPlatformInfo(platforms[i], CL_PLATFORM_NAME, 0, NULL, &stringLength);\n"
 			"\t\tif (errorCode != CL_SUCCESS) {\n"
-				"\t\t\tprintf(\"Error: clGetPlatformInfo() to get CL_PLATFORM_NAME length returned '%s'.\\n\", TranslateErrorCode(errorCode));\n"
+				"\t\t\tstd::cout << \"Error: clGetPlatformInfo() to get CL_PLATFORM_NAME length returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 				"\t\t\tplatformFound = false;\n"
 				"\t\t\terrorCode = CL_SUCCESS;\n"
 			"\t\t}\n"
@@ -290,21 +290,21 @@ void create_Utils_Files(const std::string &path) {
 			"\t\t\tstd::vector<char> foundPlatformName(stringLength);\n"
 			"\t\t\terrorCode = clGetPlatformInfo(platforms[i], CL_PLATFORM_NAME, stringLength, &foundPlatformName[0], NULL);\n"
 			"\t\t\tif (errorCode != CL_SUCCESS) {\n"
-				"\t\t\t\tprintf(\"Error: clGetplatform_ids() to get CL_PLATFORM_NAME returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+				"\t\t\t\tstd::cout << \"Error: clGetplatform_ids() to get CL_PLATFORM_NAME returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 				"\t\t\t\tplatformFound = false;\n"
 				"\t\t\t\terrorCode = CL_SUCCESS;\n"
 			"\t\t\t}\n"
 			"\t\t\telse {\n"
-			"\t\t\t\tif (strstr(&foundPlatformName[0], platformName) != 0) {\n"
+			"\t\t\t\tif (strstr(&foundPlatformName[0], platformName.c_str()) != 0) {\n"
 				"\t\t\t\t\tplatformFound = true;\n"
-				"\t\t\t\t\tprintf(\"Required Platform found\\n\");\n"
+				"\t\t\t\t\tstd::cout << \"Required Platform found\" << std::endl;\n"
 			"\t\t\t\t}\n"
 			"\t\t\t}\n"
 			"\t\t}\n\n"
 			"\t\tif (platformFound) {\n"
 				"\t\t\terrorCode = clGetDeviceIDs(platforms[i], deviceType, 0, NULL, &numDevices);\n"
 				"\t\t\tif (errorCode != CL_SUCCESS) {\n"
-					"\t\t\t\tprintf(\"clGetDeviceIDs() returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+					"\t\t\t\tstd::cout << \"clGetDeviceIDs() returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 				"\t\t\t}\n\n"
 
 				"\t\t\tif (numDevices != 0) {\n"
@@ -322,7 +322,7 @@ void create_Utils_Files(const std::string &path) {
 		"\tsize_t stringLength = 0;\n"
 		"\terrorCode = clGetPlatformInfo(platformID, CL_PLATFORM_VERSION, 0, NULL, &stringLength);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetPlatformInfo() to get CL_PLATFORM_VERSION length returned '%s'.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetPlatformInfo() to get CL_PLATFORM_VERSION length returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
@@ -330,7 +330,7 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetPlatformInfo(platformID, CL_PLATFORM_VERSION, stringLength, &platformVersion[0], NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetplatform_ids() to get CL_PLATFORM_VERSION returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetplatform_ids() to get CL_PLATFORM_VERSION returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
@@ -340,7 +340,7 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetDeviceInfo(ocl->device, CL_DEVICE_VERSION, 0, NULL, &stringLength);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetDeviceInfo() to get CL_DEVICE_VERSION length returned '%s'.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetDeviceInfo() to get CL_DEVICE_VERSION length returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
@@ -348,7 +348,7 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetDeviceInfo(ocl->device, CL_DEVICE_VERSION, stringLength, &deviceVersion[0], NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetDeviceInfo() to get CL_DEVICE_VERSION returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetDeviceInfo() to get CL_DEVICE_VERSION returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
@@ -358,7 +358,7 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetDeviceInfo(ocl->device, CL_DEVICE_OPENCL_C_VERSION, 0, NULL, &stringLength);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetDeviceInfo() to get CL_DEVICE_OPENCL_C_VERSION length returned '%s'.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetDeviceInfo() to get CL_DEVICE_OPENCL_C_VERSION length returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
@@ -366,7 +366,7 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetDeviceInfo(ocl->device, CL_DEVICE_OPENCL_C_VERSION, stringLength, &compilerVersion[0], NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetDeviceInfo() to get CL_DEVICE_OPENCL_C_VERSION returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetDeviceInfo() to get CL_DEVICE_OPENCL_C_VERSION returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n"
 		"\telse if (strstr(&compilerVersion[0], \"OpenCL C 2.0\") != NULL) {\n"
@@ -376,25 +376,25 @@ void create_Utils_Files(const std::string &path) {
 	"}\n\n"
 
 
-	"cl_int SetupOpenCL(opencl_arguments *ocl, cl_device_type deviceType, const char* platformName) {\n"
+	"cl_int SetupOpenCL(opencl_arguments *ocl, cl_device_type deviceType, std::string platformName) {\n"
 		"\tcl_int errorCode = CL_SUCCESS;\n"
 
 		"\tcl_platform_id platformID = FindOpenCLPlatform( deviceType,platformName);\n"
 		"\tif (platformID == NULL) {\n"
-			"\t\tprintf(\"Error: Failed to find OpenCL platform.\\n\");\n"
+			"\t\tstd::cout << \"Error: Failed to find OpenCL platform.\" << std::endl;\n"
 			"\t\treturn CL_INVALID_VALUE;\n"
 		"\t}\n\n"
 
 		"\tcl_context_properties contextProperties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platformID, 0 };\n"
 		"\tocl->context = clCreateContextFromType(contextProperties, deviceType, NULL, NULL, &errorCode);\n"
 		"\tif ((errorCode != CL_SUCCESS) || (NULL == ocl->context)) {\n"
-			"\t\tprintf(\"Couldn't create a context, clCreateContextFromType() returned '%s'.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Couldn't create a context, clCreateContextFromType() returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
 		"\terrorCode = clGetContextInfo(ocl->context, CL_CONTEXT_DEVICES, sizeof(cl_device_id), &ocl->device, NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetContextInfo() to get list of devices returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetContextInfo() to get list of devices returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
@@ -414,33 +414,33 @@ void create_Utils_Files(const std::string &path) {
 		"\tocl->commandQueue = clCreateCommandQueue(ocl->context, ocl->device, properties, &errorCode);\n"
 "#endif\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clCreateCommandQueue() returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clCreateCommandQueue() returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 		"\t}\n"
 		"\treturn errorCode;\n"
 	"}\n\n"
 
-	"cl_int CreateAndBuildProgram(opencl_arguments *ocl, const char* fileName) {\n"
+	"cl_int CreateAndBuildProgram(opencl_arguments *ocl, std::string fileName) {\n"
 		"\tcl_int errorCode = CL_SUCCESS;\n"
 
 		"\tchar* source = NULL;\n"
 		"\tsize_t source_size = 0;\n"
-		"\terrorCode = ReadSourceFromFile(fileName, &source, &source_size);\n"
+		"\terrorCode = ReadSourceFromFile(fileName.c_str(), &source, &source_size);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: ReadSourceFromFile returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: ReadSourceFromFile returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\tdelete[] source;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
 		"\tocl->program = clCreateProgramWithSource(ocl->context, 1, (const char**)&source, &source_size, &errorCode);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clCreateProgramWithSource returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clCreateProgramWithSource returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\tdelete[] source;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
 		"\terrorCode = clBuildProgram(ocl->program, 1, &ocl->device, \"\", NULL, NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clBuildProgram() for source program returned %s.\\n\", TranslateErrorCode(errorCode));\n\n"
+			"\t\tstd::cout << \"Error: clBuildProgram() for source program returned \" << TranslateErrorCode(errorCode) << std::endl;\n\n"
 		"\t}\n\n"
 		"\treturn errorCode;\n"
 	"}\n\n"
@@ -456,13 +456,13 @@ void create_Utils_Files(const std::string &path) {
 		"\t}\n\n"
 
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: Failed to run the kernel, clEnqueueNDRangeKernel call returned %s\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: Failed to run the kernel, clEnqueueNDRangeKernel call returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
 		"\errorCode = clFinish(ocl->commandQueue);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clFinish returned %s\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clFinish returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 		"\t}\n"
 		"\treturn errorCode;\n"
 	"}\n\n"
@@ -474,12 +474,12 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetPlatformIDs(0, NULL, &numPlatforms);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetplatform_ids() to get num platforms returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetplatform_ids() to get num platforms returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn false;\n"
 		"\t}\n\n"
 
 		"\tif (numPlatforms == 0) {\n"
-			"\t\tprintf(\"Error: No platforms found!\\n\");\n"
+			"\t\tstd::cout << \"Error: No platforms found!\" << std::endl;\n"
 			"\t\treturn false;\n"
 		"\t}\n\n"
 
@@ -487,7 +487,7 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetPlatformIDs(numPlatforms, &platforms[0], NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetplatform_ids() to get platforms returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetplatform_ids() to get platforms returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn false;\n"
 		"\t}\n\n"
 
@@ -497,7 +497,7 @@ void create_Utils_Files(const std::string &path) {
 
 			"\t\terrorCode = clGetPlatformInfo(platforms[i], CL_PLATFORM_NAME, 0, NULL, &stringLength);\n"
 			"\t\tif (errorCode != CL_SUCCESS) {\n"
-				"\t\t\tprintf(\"Error: clGetPlatformInfo() to get CL_PLATFORM_NAME length returned '%s'.\\n\", TranslateErrorCode(errorCode));\n"
+				"\t\t\tstd::cout << \"Error: clGetPlatformInfo() to get CL_PLATFORM_NAME length returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 				"\t\t\treturn false;\n"
 			"\t\t}\n\n"
 
@@ -505,51 +505,51 @@ void create_Utils_Files(const std::string &path) {
 
 			"\t\terrorCode = clGetPlatformInfo(platforms[i], CL_PLATFORM_NAME, stringLength, &platformName[0], NULL);\n"
 			"\t\tif (errorCode != CL_SUCCESS) {\n"
-				"\t\t\tprintf(\"Error: clGetplatform_ids() to get CL_PLATFORM_NAME returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+				"\t\t\tstd::cout << \"Error: clGetplatform_ids() to get CL_PLATFORM_NAME returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 				"\t\t\treturn false;\n"
 			"\t\t}\n\n"
 
 			"\t\terrorCode = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &numDevices);\n"
 			"\t\tif (errorCode != CL_SUCCESS) {\n"
-				"\t\t\tprintf(\"Error: clGetplatform_ids() to get num platforms returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+				"\t\t\tstd::cout << \"Error: clGetplatform_ids() to get num platforms returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 				"\t\t\treturn false;\n"
 			"\t\t}\n\n"
 
 			"\t\tif (numDevices == 0) {\n"
-				"\t\t\tprintf(\"Error: No devices found!\\n\");\n"
+				"\t\t\tstd::cout << \"Error: No devices found!\" << std::endl;\n"
 				"\t\t\treturn false;\n"
 			"\t\t}\n"
 			"\t\tstd::vector<cl_device_id> devices(numDevices);\n\n"
 
 			"\t\terrorCode = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, numDevices, &devices[0], NULL);\n"
 			"\t\tif (errorCode != CL_SUCCESS) {\n"
-				"\t\t\tprintf(\"Error: clGetDeviceIDs() to get platforms returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+				"\t\t\tstd::cout << \"Error: clGetDeviceIDs() to get platforms returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 				"\t\t\treturn false;\n"
 			"\t\t}\n\n"
 			"\t\tfor (int j = 0; j < numDevices; j++) {\n"
-				"\t\t\tprintf(\"   Device Serial Number : %d \", ++devSerialNum);\n"
+				"\t\t\tstd::cout << \"   Device Serial Number : \" << ++devSerialNum;\n"
 
-				"\t\t\tprintf(\"	DeviceID:%d, \", devices[j]);\n"
+				"\t\t\tstd::cout << \"   DeviceID: \" << devices[j] << \", \";\n"
 
 				"\t\t\tsize_t deviceStringLength = 0;\n\n"
 
 				"\t\t\terrorCode = clGetDeviceInfo(devices[j], CL_DEVICE_NAME, 0, NULL, &deviceStringLength);\n"
 				"\t\t\tif (errorCode != CL_SUCCESS) {\n"
-					"\t\t\t\tprintf(\"Error: clGetDeviceInfo() to get device name length returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+					"\t\t\t\tstd::cout << \"Error: clGetDeviceInfo() to get device name length returned \" << TranslateErrorCode(errorCode)) << std::endl;\n"
 					"\t\t\t\treturn false;\n"
 				"\t\t\t}\n"
 				"\t\t\tstd::vector<char> deviceName(deviceStringLength);\n"
 				"\t\t\terrorCode = clGetDeviceInfo(devices[j], CL_DEVICE_NAME, deviceStringLength, &deviceName[0], NULL);\n"
 				"\t\t\tif (errorCode != CL_SUCCESS) {\n"
-					"\t\t\t\tprintf(\"Error: clGetDeviceInfo() to get device name returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+					"\t\t\t\tstd::cout << \"Error: clGetDeviceInfo() to get device name returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 					"\t\t\t\treturn false;\n"
 				"\t\t\t}\n\n"
-				"\t\t\tprintf(\"Device Name:%s, \", &deviceName[0]);\n"
+				"\t\t\tstd::cout << \"Device Name: \" <<  &deviceName[0] << \", \";\n"
 
 				"\t\t\tcl_device_type type;\n"
 				"\t\t\terrorCode = clGetDeviceInfo(devices[j], CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL);\n"
 				"\t\t\tif (errorCode != CL_SUCCESS) {\n"
-					"\t\t\t\tprintf(\"Error: clGetDeviceInfo() to get device type returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+					"\t\t\t\tstd::cout << \"Error: clGetDeviceInfo() to get device type returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 					"\t\t\t\treturn false;\n"
 				"\t\t\t}\n"
 				"\t\t\tprintf(\"Device Type:%s, \", TranslateDeviceType(type));\n\n"
@@ -557,52 +557,52 @@ void create_Utils_Files(const std::string &path) {
 				"\t\t\tcl_uint max_compute_units;\n"
 				"\t\t\terrorCode = clGetDeviceInfo(devices[j], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units, NULL);\n"
 				"\t\t\tif (errorCode != CL_SUCCESS) {\n"
-					"\t\t\t\tprintf(\"Error: clGetDeviceInfo() to get device max compute units returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+					"\t\t\t\tstd::cout << \"Error: clGetDeviceInfo() to get device max compute units returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 					"\t\t\t\treturn false;\n"
 				"\t\t\t}\n"
-				"\t\t\tprintf(\"Device Max Compute Units:%d, \", max_compute_units);\n\n"
+				"\t\t\tstd::cout << \"Device Max Compute Units: \" << max_compute_units << \", \";\n\n"
 
 				"\t\t\tsize_t max_work_group_size;\n"
 				"\t\t\terrorCode = clGetDeviceInfo(devices[j], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &max_work_group_size, NULL);\n"
 				"\t\t\tif (errorCode != CL_SUCCESS) {\n"
-					"\t\t\t\tprintf(\"Error: clGetDeviceInfo() to get device max work group size returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+					"\t\t\t\tstd::cout << \"Error: clGetDeviceInfo() to get device max work group size returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 					"\t\t\t\treturn false;\n"
 				"\t\t\t}\n"
-				"\t\t\tprintf(\"Device Max Work Group Size:%d, \\n\", max_work_group_size);\n\n"
+				"\t\t\tstd::cout << \"Device Max Work Group Size:\" <<  max_work_group_size << \", \\n\";\n\n"
 
 				"\t\t\tcl_ulong max_global_mem;\n"
 				"\t\t\terrorCode = clGetDeviceInfo(devices[j], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &max_global_mem, NULL);\n"
 				"\t\t\tif (errorCode != CL_SUCCESS)  {\n"
-					"\t\t\t\tprintf(\"Error: clGetDeviceInfo() to get device max global mem returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+					"\t\t\t\tstd::cout << \"Error: clGetDeviceInfo() to get device max global mem returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 					"\t\t\t\treturn false;\n"
 				"\t\t\t}\n"
-				"\t\t\tprintf(\"	Device Max Global Memory:%d Byte, \", max_global_mem);\n\n"
+				"\t\t\tstd::cout << \"	  Device Max Global Memory: \" <<  max_global_mem << \" Byte, \";\n\n"
 
 				"\t\t\tcl_ulong max_global_mem_cache;\n"
 				"\t\t\terrorCode = clGetDeviceInfo(devices[j], CL_DEVICE_GLOBAL_MEM_CACHE_SIZE, sizeof(cl_ulong), &max_global_mem_cache, NULL);\n"
 				"\t\t\tif (errorCode != CL_SUCCESS) {\n"
-					"\t\t\t\tprintf(\"Error: clGetDeviceInfo() to get device max global mem cache size returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+					"\t\t\t\tstd::cout << \"Error: clGetDeviceInfo() to get device max global mem cache size returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 					"\t\t\t\treturn false;\n"
 				"\t\t\t}\n"
-				"\t\t\tprintf(\"Device Max Global Memory Cache Size:%d Byte, \", max_global_mem_cache);\n\n"
+				"\t\t\tstd::cout << \"Device Max Global Memory Cache Size:\" << max_global_mem_cache << \" Byte, \";\n\n"
 
 				"\t\t\tcl_uint max_global_mem_cacheline_size;\n"
 				"\t\t\terrorCode = clGetDeviceInfo(devices[j], CL_DEVICE_GLOBAL_MEM_CACHELINE_SIZE, sizeof(cl_uint), &max_global_mem_cacheline_size, NULL);\n"
 				"\t\t\tif (errorCode != CL_SUCCESS) {\n"
-					"\t\t\t\tprintf(\"Error: clGetDeviceInfo() to get device max global mem cache size returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+					"\t\t\t\tstd::cout << \"Error: clGetDeviceInfo() to get device max global mem cache size returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 					"\t\t\t\treturn false;\n"
 				"\t\t\t}\n"
-				"\t\t\tprintf(\"Device Max Global Memory Cacheline Size:%d Byte, \", max_global_mem_cacheline_size);\n\n"
+				"\t\t\tstd::cout << \"Device Max Global Memory Cacheline Size:\" << max_global_mem_cacheline_size << \" Byte, \";\n\n"
 
 				"\t\t\tcl_ulong max_local_mem;\n"
 				"\t\t\terrorCode = clGetDeviceInfo(devices[j], CL_DEVICE_LOCAL_MEM_SIZE, sizeof(cl_ulong), &max_local_mem, NULL);\n"
 				"\t\t\tif (errorCode != CL_SUCCESS) {\n"
-					"\t\t\t\tprintf(\"Error: clGetDeviceInfo() to get device max local mem size returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+					"\t\t\t\tstd::cout << \"Error: clGetDeviceInfo() to get device max local mem size returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 					"\t\t\t\treturn false;\n"
 				"\t\t\t}\n"
-				"\t\t\tprintf(\"Device Max Local Memory Size:%d Byte, \", max_local_mem);\n"
+				"\t\t\tstd::cout << \"Device Max Local Memory Size:\" << max_local_mem << \" Byte, \";\n"
 
-				"\t\t\tprintf(\"\\n\\n\");\n"
+				"\t\t\tstd::cout << std::endl << std::endl;\n"
 			"\t\t}\n"
 		"\t}\n"
 		"\treturn true;\n"
@@ -617,42 +617,42 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetDeviceInfo(id, CL_DEVICE_NAME, 0, NULL, &deviceStringLength);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetDeviceInfo() to get device name length returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetDeviceInfo() to get device name length returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn false;\n"
 		"\t}\n"
 		"\tstd::vector<char> deviceName(deviceStringLength);\n"
 		"\terrorCode = clGetDeviceInfo(id, CL_DEVICE_NAME, deviceStringLength, &deviceName[0], NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetDeviceInfo() to get device name returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetDeviceInfo() to get device name returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn false;\n"
 		"\t}\n"
-		"\tprintf(\"Device Name:%s, \", &deviceName[0]);\n\n"
+		"\tstd::cout << \"Device Name:\" << &deviceName[0] << \", \";\n\n"
 
 		"\tcl_device_type type;\n"
 		"\terrorCode = clGetDeviceInfo(id, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetDeviceInfo() to get device type returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetDeviceInfo() to get device type returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn false;\n"
 		"\t}\n"
-		"\tprintf(\"Device Type:%s, \", TranslateDeviceType(type));\n\n"
+		"\tstd::cout << \"Device Type:\" << TranslateDeviceType(type) << \", \";\n\n"
 
 		"\tcl_uint max_compute_units;\n"
 		"\terrorCode = clGetDeviceInfo(id, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &max_compute_units, NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetDeviceInfo() to get device max compute units returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetDeviceInfo() to get device max compute units returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn false;\n"
 		"\t}\n"
-		"\tprintf(\"Device Max Compute Units:%d, \", max_compute_units);\n\n"
+		"\tstd::cout << \"Device Max Compute Units:\" << max_compute_units << \", \";\n\n"
 
 		"\tsize_t max_work_group_size;\n"
 		"\terrorCode = clGetDeviceInfo(id, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &max_work_group_size, NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetDeviceInfo() to get device max work group size returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetDeviceInfo() to get device max work group size returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn false;\n"
 		"\t}\n"
-		"\tprintf(\"Device Max Work Group Size:%d, \\n\", max_work_group_size);\n"
+		"\tstd::cout << \"Device Max Work Group Size:\" << max_work_group_size << \",\\n\";\n"
 
-		"\tprintf(\"\\n\\n\");\n"
+		"\tstd::cout << std::endl << std::endl;\n"
 
 		"\treturn true;\n"
 	"}\n\n"
@@ -666,20 +666,20 @@ void create_Utils_Files(const std::string &path) {
 		"\tcl_platform_id platformid;\n"
 		"\terrorCode = clGetDeviceInfo(id, CL_DEVICE_PLATFORM, sizeof(cl_platform_id), &platformid, NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetDeviceInfo() to get platform id returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetDeviceInfo() to get platform id returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
 		"\tcl_context_properties contextProperties[] = { CL_CONTEXT_PLATFORM, (cl_context_properties)platformid, 0 };\n"
 		"\tocl->context = clCreateContext(contextProperties, 1, deviceid, NULL, NULL, &errorCode);\n"
 		"\tif ((errorCode != CL_SUCCESS) || (NULL == ocl->context)) {\n"
-			"\t\tprintf(\"Couldn't create a context, clCreateContext() returned '%s'.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Couldn't create a context, clCreateContext() returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
 		"\terrorCode = clGetContextInfo(ocl->context, CL_CONTEXT_DEVICES, sizeof(cl_device_id), &ocl->device, NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetContextInfo() to get list of devices returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetContextInfo() to get list of devices returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
@@ -699,7 +699,7 @@ void create_Utils_Files(const std::string &path) {
 		"\tocl->commandQueue = clCreateCommandQueue(ocl->context, ocl->device, properties, &errorCode);\n"
 "#endif\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clCreateCommandQueue() returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clCreateCommandQueue() returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 		"\t}\n"
 
 		"\treturn errorCode;\n"
@@ -711,12 +711,12 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetPlatformIDs(0, NULL, &numPlatforms);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetplatform_ids() to get the number of platforms returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetplatform_ids() to get the number of platforms returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn NULL;\n"
 		"\t}\n\n"
 
 		"\tif (numPlatforms == 0) {\n"
-			"\t\tprintf(\"Error: No platforms found!\\n\");\n"
+			"\t\tstd::cout << \"Error: No platforms found!\" << std::endl;\n"
 			"\t\treturn NULL;\n"
 		"\t}\n\n"
 
@@ -724,7 +724,7 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetPlatformIDs(numPlatforms, &platforms[0], NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tprintf(\"Error: clGetplatform_ids() to get platforms returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+			"\t\tstd::cout << \"Error: clGetplatform_ids() to get platforms returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn NULL;\n"
 		"\t}\n\n"
 
@@ -733,19 +733,19 @@ void create_Utils_Files(const std::string &path) {
 
 			"\t\terrorCode = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, 0, NULL, &numDevices);\n"
 			"\t\tif (errorCode != CL_SUCCESS) {\n"
-				"\t\t\tprintf(\"Error: clGetDeviceIDs() to get the number of devices returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+				"\t\t\tstd::cout << \"Error: clGetDeviceIDs() to get the number of devices returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 				"\t\t\treturn NULL;\n"
 			"\t\t}\n\n"
 
 			"\t\tif (numDevices == 0) {\n"
-				"\t\t\tprintf(\"Error: No devices found!\\n\");\n"
+				"\t\t\tstd::cout << \"Error: No devices found!\" << std::endl;\n"
 				"\t\t\treturn NULL;\n"
 			"\t\t}\n"
 			"\t\tstd::vector<cl_device_id> devices(numDevices);\n\n"
 
 			"\t\terrorCode = clGetDeviceIDs(platforms[i], CL_DEVICE_TYPE_ALL, numDevices, &devices[0], NULL);\n"
 			"\t\tif (errorCode != CL_SUCCESS ) {\n"
-				"\t\t\tprintf(\"Error: clGetDeviceIDs() to get platforms returned %s.\\n\", TranslateErrorCode(errorCode));\n"
+				"\t\t\tstd::cout << \"Error: clGetDeviceIDs() to get platforms returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 				"\t\t\treturn NULL;\n"
 			"\t\t}\n"
 			"\t\tfor (int j = 0; j < numDevices; ++j) {\n"
@@ -757,9 +757,9 @@ void create_Utils_Files(const std::string &path) {
 	"}";
 
 
-	std::ofstream output_header{ path + "\\utils.h" };
+	std::ofstream output_header{ path + "\\utils.hpp" };
 	if (output_header.bad()) {
-		throw Converter_RVC_Cpp::Converter_Exception{ "Cannot open the file " + path + "\\utils.h" };
+		throw Converter_RVC_Cpp::Converter_Exception{ "Cannot open the file " + path + "\\utils.hpp" };
 	}
 	output_header << header;
 
