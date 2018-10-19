@@ -26,12 +26,12 @@ void create_OpenCL_arguments_struct(const std::string &path) {
 		"\tfloat            deviceVersion;\n"
 		"\tfloat            compilerVersion;\n\n"
 
-		"\tsize_t			globalWorkSize[1];\n"
+		"\tsize_t		   globalWorkSize[1];\n"
 		"\tsize_t          localWorkSize[1];\n"
-		"\tcl_int          work_Dim;"
+		"\tcl_int          work_Dim;\n"
 		"};\n";
-	std::string source = "#include \"opencl_arguments.h\"\n"
-		"#include \"Translation.h\"\n"
+	std::string source = "#include \"opencl_arguments.hpp\"\n"
+		"#include \"Translation.hpp\"\n"
 		"#include <iostream>\n\n"
 					
 		"opencl_arguments::opencl_arguments() :\n"
@@ -80,7 +80,7 @@ void create_OpenCL_arguments_struct(const std::string &path) {
 		"\t}\n"
 	"}";
 
-	std::ofstream output_header{ path + "\\opencl_arguments.h" };
+	std::ofstream output_header{ path + "\\opencl_arguments.hpp" };
 	if (output_header.bad()) {
 		throw Converter_RVC_Cpp::Converter_Exception{ "Cannot open the file " + path + "\\opencl_arguments.hpp" };
 	}
