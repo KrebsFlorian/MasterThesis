@@ -206,14 +206,15 @@ void create_Translation_Files(const std::string &path) {
 
 void create_Utils_Files(const std::string &path) {
 	std::string header = "#pragma once\n"
+			"#include \"Translation.hpp\"\n"
 			"#include \"opencl_arguments.hpp\"\n\n"
-
+			
 			"//Parts of the Source Code from intel template\n"
-			"cl_int SetupOpenCL(opencl_arguments *ocl, cl_device_type deviceType, const char* platformName);\n"
+			"cl_int SetupOpenCL(opencl_arguments *ocl, cl_device_type deviceType, std::string platformName);\n"
 			"//Parts of the Source Code from intel template\n"
-			"cl_int CreateAndBuildProgram(opencl_arguments *ocl, const char* fileName);\n\n"
+			"cl_int CreateAndBuildProgram(opencl_arguments *ocl, std::string fileName);\n\n"
 
-			"cl_int ExecuteKernel(opencl_arguments *ocl, int index);\n\n"
+			"cl_int ExecuteKernel(opencl_arguments *ocl, int index, cl_event *event = NULL);\n\n"
 
 			"bool printClDevices();\n\n"
 
@@ -223,9 +224,9 @@ void create_Utils_Files(const std::string &path) {
 
 			"cl_device_id findDeviceID(int id);";
 
-	std::string source = "#include \"utils.hpp\" \n "
+	std::string source = "#include \"utils.hpp\"\n"
 		"#include <stdio.h>\n"
-		"#include \"Translation.hpp\"\n\n"
+		"#include <iostream>\n\n"
 
 		"cl_int ReadSourceFromFile(const char* fileName, char** source, size_t* sourceSize) {\n"
 		"\tcl_int errorCode = CL_SUCCESS;\n"
@@ -272,7 +273,7 @@ void create_Utils_Files(const std::string &path) {
 
 		"\terrorCode = clGetPlatformIDs(numPlatforms, &platforms[0], NULL);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
-			"\t\tstd::string << \"Error: clGetplatform_ids() to get platforms returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
+			"\t\tstd::cout << \"Error: clGetplatform_ids() to get platforms returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 			"\t\treturn NULL;\n"
 		"\t}\n\n"
 
@@ -445,14 +446,14 @@ void create_Utils_Files(const std::string &path) {
 		"\treturn errorCode;\n"
 	"}\n\n"
 
-	"cl_int ExecuteKernel(opencl_arguments *ocl, int index) {\n"
+	"cl_int ExecuteKernel(opencl_arguments *ocl, int index,cl_event *event) {\n"
 		"\tcl_int errorCode = CL_SUCCESS;\n"
 
 		"\tif (ocl->localWorkSize[0] == NULL) {\n"
-			"\t\errorCode = clEnqueueNDRangeKernel(ocl->commandQueue, ocl->kernels[index], ocl->work_Dim, NULL, ocl->globalWorkSize, NULL, 0, NULL, NULL);\n"
+			"\t\terrorCode = clEnqueueNDRangeKernel(ocl->commandQueue, ocl->kernels[index], ocl->work_Dim, NULL, ocl->globalWorkSize, NULL, 0, NULL, event);\n"
 		"\t}\n"
 		"\telse {\n"
-			"\t\errorCode = clEnqueueNDRangeKernel(ocl->commandQueue, ocl->kernels[index], ocl->work_Dim, NULL, ocl->globalWorkSize, ocl->localWorkSize, 0, NULL, NULL);\n"
+			"\t\terrorCode = clEnqueueNDRangeKernel(ocl->commandQueue, ocl->kernels[index], ocl->work_Dim, NULL, ocl->globalWorkSize, ocl->localWorkSize, 0, NULL, event);\n"
 		"\t}\n\n"
 
 		"\tif (errorCode != CL_SUCCESS) {\n"
@@ -460,7 +461,7 @@ void create_Utils_Files(const std::string &path) {
 			"\t\treturn errorCode;\n"
 		"\t}\n\n"
 
-		"\errorCode = clFinish(ocl->commandQueue);\n"
+		"\terrorCode = clFinish(ocl->commandQueue);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
 			"\t\tstd::cout << \"Error: clFinish returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 		"\t}\n"
@@ -535,7 +536,7 @@ void create_Utils_Files(const std::string &path) {
 
 				"\t\t\terrorCode = clGetDeviceInfo(devices[j], CL_DEVICE_NAME, 0, NULL, &deviceStringLength);\n"
 				"\t\t\tif (errorCode != CL_SUCCESS) {\n"
-					"\t\t\t\tstd::cout << \"Error: clGetDeviceInfo() to get device name length returned \" << TranslateErrorCode(errorCode)) << std::endl;\n"
+					"\t\t\t\tstd::cout << \"Error: clGetDeviceInfo() to get device name length returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
 					"\t\t\t\treturn false;\n"
 				"\t\t\t}\n"
 				"\t\t\tstd::vector<char> deviceName(deviceStringLength);\n"

@@ -136,7 +136,7 @@ void Converter::create_FIFO(std::string path,bool OpenCL) {
 		"#include <functional>\n"
 		"#include \"FIFO.hpp\"\n"
 		"#include <CL\\cl.hpp>\n"
-		"#include \"Utils.hpp\"\n"
+		"#include \"utils.hpp\"\n"
 		"using namespace std;\n\n"
 
 
@@ -266,6 +266,7 @@ void Converter::create_FIFO(std::string path,bool OpenCL) {
 
 	"template<typename T, int N>\n"
 	"void Port<T, N>::opencl_read_done() {\n"
+		"\tif(read_buffer == NULL)return;\n"
 		"\tcl_int err = CL_SUCCESS;\n"
 		"\terr = clReleaseMemObject(read_buffer);\n"
 		"\tif (CL_SUCCESS != err)\n"
@@ -278,6 +279,7 @@ void Converter::create_FIFO(std::string path,bool OpenCL) {
 
 	"template<typename T, int N>\n"
 	"void Port<T, N>::opencl_write_done(opencl_arguments &ocl) {\n"
+		"\tif (write_buffer == NULL)return;\n"
 		"\tcl_int err = CL_SUCCESS;\n"
 		"\tT* resultPtr2 = (T *)clEnqueueMapBuffer(ocl.commandQueue, write_buffer, true, CL_MAP_READ, 0, sizeof(T) * write_offset, 0, NULL, NULL, &err);\n"
 		"\tif (CL_SUCCESS != err)\n"

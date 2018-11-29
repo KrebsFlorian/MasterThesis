@@ -458,13 +458,13 @@ void create_Utils_Files(const std::string &path) {
 
 		"\tif (errorCode != CL_SUCCESS) {\n"
 			"\t\tstd::cout << \"Error: Failed to run the kernel, clEnqueueNDRangeKernel call returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
-			"\t\treturn errorCode;\n"
+			"\t\t//return errorCode;\n"
 		"\t}\n\n"
 
-		"\terrorCode = clFinish(ocl->commandQueue);\n"
+		"\t/*errorCode = clFinish(ocl->commandQueue);\n"
 		"\tif (errorCode != CL_SUCCESS) {\n"
 			"\t\tstd::cout << \"Error: clFinish returned \" << TranslateErrorCode(errorCode) << std::endl;\n"
-		"\t}\n"
+		"\t}*/\n"
 		"\treturn errorCode;\n"
 	"}\n\n"
 
