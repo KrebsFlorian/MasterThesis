@@ -1071,24 +1071,26 @@ class Actor_Generator {
 		Token t = token_producer.get_next_Token();
 		Action_Information act_inf;
 		std::string output;
+		output.append(prefix+"{\n");//place it in a scope to avoid variable name collisions
 		std::string end_of_output;
 		while (t.str != "action") {
 			t = token_producer.get_next_Token();
 		}
 		t = token_producer.get_next_Token(); // action -> skip, not relevant because no function is created!
 		while (t.str != "==>") {
-			output += convert_input_FIFO_access_opencl(t, token_producer, act_inf, local_map, prefix);
+			output += convert_input_FIFO_access_opencl(t, token_producer, act_inf, local_map, prefix+"\t");
 		}
 		t = token_producer.get_next_Token();
 		while (t.str != "do" && t.str != "guard" && t.str != "var" && t.str != "end") {//output fifos
-			end_of_output.append(convert_output_FIFO_access_opencl(t, token_producer, act_inf, local_map, prefix));
+			end_of_output.append(convert_output_FIFO_access_opencl(t, token_producer, act_inf, local_map, prefix+"\t"));
 		}
 		if (t.str == "guard") {//this case shouldn't happen, because the opencl flag should be false in this case!!!
 			while (t.str != "end" && t.str != "do") {
 				t = token_producer.get_next_Token();
 			}
 		}
-		output.append(convert_action_body(t, token_producer, local_map, prefix));
+		output.append(convert_action_body(t, token_producer, local_map, prefix+"\t"));
+		end_of_output.append(prefix+"}\n");
 		return output + end_of_output;
 	}
 
@@ -2448,8 +2450,7 @@ class Actor_Generator {
 			if (cycleFSM) {
 				//insert every action once into the scheduler
 				for (auto it = states.begin(); it != states.end(); ++it) {
-					if (it == states.begin()) { output.append("\t\tif(state == states::" + *it + "){\n"); }
-					else { output.append("\t\telse if(state == states::" + *it + "){\n"); }
+					output.append("\t\tif(state == states::" + *it + "){\n"); }
 					//find actions that could be scheduled in this state
 					std::vector<std::string> schedulable_actions = find_schedulable_actions(*it);
 					//sort the list of schedulable actions with the comparsion function defined above if a priority block is defined
@@ -2482,7 +2483,7 @@ class Actor_Generator {
 					}
 				}
 				//append the FSM_Cycle method to the scheduler
-				output.append("\t\telse if(");
+				output.append("\t\tif(");
 				//condition
 				std::string cond{ "state = states::" + start_state };
 				if (actionMethodName_schedulingCondition_mapping.find("FSM$Cycle$"+actor_name) != actionMethodName_schedulingCondition_mapping.end()) {

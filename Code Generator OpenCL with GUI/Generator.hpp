@@ -28,7 +28,6 @@ public:
 
 	//strings are method names
 	bool operator()(std::string& str1, std::string& str2) const {
-		//TODO matching might be wrong - shouldn't have an influence, can only occur if they are not related 
 		for (auto it = priority_greater_lesser.begin(); it != priority_greater_lesser.end(); ++it) {
 			//str1 > str2
 			if (str1 == it->first.first+"$"+it->first.second && str2 == it->second.first+"$"+it->second.second) { 
@@ -257,6 +256,7 @@ class Actor_Generator {
 		}
 		//start building the strings:
 		output.append(actor_name + "{\nprivate:\n");
+		//source_output.append("#include \"" + actor_name + ".hpp\"\n\n");
 		output.append("//imports\n");
 		output.append(imports);
 		output.append("//imports end\n\n");
@@ -1071,24 +1071,26 @@ class Actor_Generator {
 		Token t = token_producer.get_next_Token();
 		Action_Information act_inf;
 		std::string output;
+		output.append(prefix+"{\n");//place it in a scope to avoid variable name collisions
 		std::string end_of_output;
 		while (t.str != "action") {
 			t = token_producer.get_next_Token();
 		}
 		t = token_producer.get_next_Token(); // action -> skip, not relevant because no function is created!
 		while (t.str != "==>") {
-			output += convert_input_FIFO_access_opencl(t, token_producer, act_inf, local_map, prefix);
+			output += convert_input_FIFO_access_opencl(t, token_producer, act_inf, local_map, prefix+"\t");
 		}
 		t = token_producer.get_next_Token();
 		while (t.str != "do" && t.str != "guard" && t.str != "var" && t.str != "end") {//output fifos
-			end_of_output.append(convert_output_FIFO_access_opencl(t, token_producer, act_inf, local_map, prefix));
+			end_of_output.append(convert_output_FIFO_access_opencl(t, token_producer, act_inf, local_map, prefix+"\t"));
 		}
 		if (t.str == "guard") {//this case shouldn't happen, because the opencl flag should be false in this case!!!
 			while (t.str != "end" && t.str != "do") {
 				t = token_producer.get_next_Token();
 			}
 		}
-		output.append(convert_action_body(t, token_producer, local_map, prefix));
+		output.append(convert_action_body(t, token_producer, local_map, prefix+"\t"));
+		end_of_output.append(prefix+"}\n");
 		return output + end_of_output;
 	}
 
@@ -1475,7 +1477,7 @@ class Actor_Generator {
 			t = token_producer.get_next_Token(); // [
 			t = token_producer.get_next_Token(); // start of token read part
 			std::vector<std::string> consumed_element_names; // store elements first, because there can be a repeat
-			while (t.str != "]") {//TODO - keine actor state var, also kann das hier so bleiben
+			while (t.str != "]") {
 				if (t.str == ",") {
 					t = token_producer.get_next_Token();
 				}
@@ -1504,7 +1506,7 @@ class Actor_Generator {
 					output.append(prefix+"for(int i = 0;i < " + std::to_string(repeat_count) + ";i++){\n");
 					output.append(prefix + "\t" + *it + "[i] = " + name + "$ptr[" + name + "$index++];\n");
 					output.append(prefix + "}\n");
-					FIFO_access_replace_map_for_OpenCL[*it] = name+"$ptr["+name+"$index + " + std::to_string(preview_index)+"+"; //TODO
+					FIFO_access_replace_map_for_OpenCL[*it] = name+"$ptr["+name+"$index + " + std::to_string(preview_index)+"+";
 					preview_index += repeat_count;
 				}
 				act_inf.input_fifos.push_back(std::make_pair(name, repeat_count*consumed_element_names.size()));
@@ -2120,7 +2122,6 @@ class Actor_Generator {
 		while (t.str != ":" && t.str != "]") {
 			if (t.str == "if") {
 				auto buf = convert_inline_if(t, token_producer);
-				//TODO
 				tmp.append(buf.first);
 			}
 			else if (t.str == "[") {
@@ -2389,7 +2390,7 @@ class Actor_Generator {
 			if (state == "") {
 				output.push_back(it->first);
 			}
-			else {//TODO matching
+			else {
 				std::string method_name{ it->first };
 				for (auto fsm_entry_it = schedulable_actionTag_actionName.begin(); fsm_entry_it != schedulable_actionTag_actionName.end(); ++fsm_entry_it) {
 					if (fsm_entry_it->second.empty()) {//if second part if empty, than only the first part has to be used
@@ -2418,7 +2419,6 @@ class Actor_Generator {
 	std::string find_next_state(std::string current_state, std::string fired_action_methodName) {
 		for (auto fsm_it = fsm_state_actionTag_actionName_nextstate.begin(); fsm_it != fsm_state_actionTag_actionName_nextstate.end(); ++fsm_it) {
 			if (std::get<0>(*fsm_it) == current_state) {
-				//TODO matching funktioniert so nicht
 				if (fired_action_methodName == std::get<1>(*fsm_it) + "$" + std::get<2>(*fsm_it)) {
 					return std::get<3>(*fsm_it);
 				}
@@ -2450,8 +2450,7 @@ class Actor_Generator {
 			if (cycleFSM) {
 				//insert every action once into the scheduler
 				for (auto it = states.begin(); it != states.end(); ++it) {
-					if (it == states.begin()) { output.append("\t\tif(state == states::" + *it + "){\n"); }
-					else { output.append("\t\telse if(state == states::" + *it + "){\n"); }
+					output.append("\t\tif(state == states::" + *it + "){\n"); }
 					//find actions that could be scheduled in this state
 					std::vector<std::string> schedulable_actions = find_schedulable_actions(*it);
 					//sort the list of schedulable actions with the comparsion function defined above if a priority block is defined
@@ -2484,7 +2483,7 @@ class Actor_Generator {
 					}
 				}
 				//append the FSM_Cycle method to the scheduler
-				output.append("\t\telse if(");
+				output.append("\t\tif(");
 				//condition
 				std::string cond{ "state = states::" + start_state };
 				if (actionMethodName_schedulingCondition_mapping.find("FSM$Cycle$"+actor_name) != actionMethodName_schedulingCondition_mapping.end()) {
