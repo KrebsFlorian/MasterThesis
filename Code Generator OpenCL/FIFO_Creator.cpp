@@ -60,8 +60,8 @@ void Converter::create_FIFO(std::string path,bool OpenCL) {
 	"template<typename T, int N>\n"
 	"T FIFO<T, N>::get_element() {\n"
 		"\tT element = data_ptr[state.read_index++];\n"
-		"\tif (state.read_index == N)state.read_index = 0;\n"
-		"\tstate.full = false;\n"
+		"\tif(state.read_index == N)state.read_index = 0;\n"
+		"\tif(state.full && state.read_index != state.write_index)state.full = false;\n"
 		"\treturn element;\n"
 	"}\n\n"
 
@@ -94,7 +94,7 @@ void Converter::create_FIFO(std::string path,bool OpenCL) {
 	"}\n\n"
 
 	"template<typename T, int N>\n"
-	"T FIFO<T,N>::element_preview(int offset){"
+	"T FIFO<T,N>::element_preview(int offset){\n"
 		"\tint index = (state.read_index+offset)%N;\n"
 		"\treturn data_ptr[index];\n"
 	"}"
@@ -117,7 +117,7 @@ void Converter::create_FIFO(std::string path,bool OpenCL) {
 	"template<typename T, int N>\n"
 	"void FIFO<T,N>::notify_read_done(int read_elements) {\n"
 		"\tstate.read_index = (state.read_index + read_elements) % N;\n"
-		"\tstate.full = false;\n"
+		"\tif(state.full && state.read_index != state.write_index)state.full = false;\n"
 	"}\n\n"
 
 	"template<typename T, int N>\n"
