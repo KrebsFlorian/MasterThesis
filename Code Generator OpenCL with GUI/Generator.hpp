@@ -2450,7 +2450,7 @@ class Actor_Generator {
 			if (cycleFSM) {
 				//insert every action once into the scheduler
 				for (auto it = states.begin(); it != states.end(); ++it) {
-					output.append("\t\tif(state == states::" + *it + "){\n"); }
+					output.append("\t\tif(state == states::" + *it + "){\n");
 					//find actions that could be scheduled in this state
 					std::vector<std::string> schedulable_actions = find_schedulable_actions(*it);
 					//sort the list of schedulable actions with the comparsion function defined above if a priority block is defined

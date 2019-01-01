@@ -110,21 +110,6 @@ std::string create_ports_string(Dataflow_Network *dpn) {
 }
 
 /*
-	This function returns a string containg the name of the FIFO connected to the given port of a given actor (id).
-	The name of the FIFO is build the following way: source actor id_source actor port_destination actor id_destination actor port.
-	Throws an exception if it cannot find the fifo name that is connected to the port of the actor (id).
-*/
-/*std::string find_fifo_name(std::string id, std::string port, Dataflow_Network *dpn) {
-	for (auto it = dpn->connections.begin(); it != dpn->connections.end(); ++it) {
-		if ((it->dst_id == id && it->dst_port+"$FIFO" == port) || (it->src_id == id && it->src_port + "$FIFO" == port)) {
-			return it->src_id + "_" + it->src_port + "_" + it->dst_id + "_" + it->dst_port;
-		}
-	}
-	//fifo not found
-	throw Failed_Main_Creation_Exception{ "Cannot find the name of the FIFO connected to the port "+port+" of the actor "+id};
-}*/
-
-/*
 	The function return a string containing the value of a given parameter of a given actor (id).
 	A parameter is a input parameter of the constructor of the actor. 
 	The function checks if the type is a FIFO. If yes, the corresponding function above is called.
@@ -359,7 +344,7 @@ void Converter::create_main(Dataflow_Network *dpn, std::string path, program_opt
 		if (actor_inf.OpenCL) {
 			//update fifo with the results of the previous run
 			first_part.append("\t\tif(" + *it + "_status.get_info<cl::sycl::info::event::command_execution_status>() == cl::sycl::info::event_command_status::complete && !" + *it + "_running.test_and_set()) {\n");
-			first_part.append("\t\t\tif ("/*+*it+"_status.get_info<cl::sycl::info::event::command_execution_status>() == cl::sycl::info::event_command_status::complete &&"*/+"update_buffer_"+*it+") {\n");
+			first_part.append("\t\t\tif(update_buffer_"+*it+") {\n");
 			std::set<std::string> ingoing{ find_ingoing_ports(*it,dpn) };
 			for (auto in = ingoing.begin(); in != ingoing.end(); ++in) {
 				first_part.append("\t\t\t\t" + *in + ".sycl_read_done();\n");
