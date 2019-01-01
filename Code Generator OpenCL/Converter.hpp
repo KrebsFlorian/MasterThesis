@@ -8,9 +8,9 @@
 
 namespace Converter {
 
-	void convert_Actors(Dataflow_Network* dpn, program_options *opts, std::string native_header_include);
+	void convert_Actors(Dataflow_Network* dpn , program_options *opts, std::string native_header_include);
 
-	void create_main(Dataflow_Network *dpn,std::string path,program_options *opt);
+	void create_main(Dataflow_Network *dpn , std::string path,program_options *opt);
 
 	void create_FIFO(std::string path,bool OpenCL);
 

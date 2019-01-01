@@ -10,18 +10,6 @@ using namespace std;
 program_options* parse_command_line_input(int argc, char *argv[]) {
 
 	program_options *opt = new program_options;
-	/*
-	opt->network_file = "E:\\Uni\\Masterarbeit\\orc-apps-mpeg113_HEVC_Reference_SW\\RIP\\src\\segmentation\\textureAnalysis\\LBP81_Top.xdf";
-	opt->source_directory = "E:\\Uni\\Masterarbeit\\orc-apps-mpeg113_HEVC_Reference_SW\\RIP\\src\\";
-	opt->target_directory = "E:\\Output\\RIP\\";
-	opt->native_includes.push_back("E:\\Uni\\Masterarbeit\\orc-apps-mpeg113_HEVC_Reference_SW\\DigitalFiltering\\lib\\native\\native_sink.c");
-	opt->native_includes.push_back("E:\\Uni\\Masterarbeit\\orc-apps-mpeg113_HEVC_Reference_SW\\DigitalFiltering\\lib\\native\\native_source.c");
-	*/
-
-	opt->network_file = "E:\\Uni\\Masterarbeit\\orc-apps-mpeg113_HEVC_Reference_SW\\ZigBee\\src\\multitoken_tx\\Top_ZigBee_tx.xdf";
-	opt->source_directory = "E:\\Uni\\Masterarbeit\\orc-apps-mpeg113_HEVC_Reference_SW\\ZigBee\\src\\";
-	opt->native_includes.push_back("E:\\Uni\\Masterarbeit\\orc-apps-mpeg113_HEVC_Reference_SW\\ZigBee\\lib\\native\\linux.c");
-	opt->target_directory = "E:\\Output\\OCL_async\\";
 
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-i") == 0) {

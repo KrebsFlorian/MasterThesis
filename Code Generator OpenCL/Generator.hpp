@@ -2450,7 +2450,7 @@ class Actor_Generator {
 			if (cycleFSM) {
 				//insert every action once into the scheduler
 				for (auto it = states.begin(); it != states.end(); ++it) {
-					output.append("\t\tif(state == states::" + *it + "){\n"); }
+					output.append("\t\tif(state == states::" + *it + "){\n");
 					//find actions that could be scheduled in this state
 					std::vector<std::string> schedulable_actions = find_schedulable_actions(*it);
 					//sort the list of schedulable actions with the comparsion function defined above if a priority block is defined
@@ -2665,7 +2665,7 @@ public:
 			4. parameter: a pointer to the Dataflow_Network object containg all the relevant data about the network
 			5. parameter: the id of the actor in the network
 	*/
-	Actor_Generator(std::string path_to_actor, int fifo_size, const bool realize_with_OpenCL, Dataflow_Network *_dpn, std::string _id) :token_producer{ path_to_actor }, FIFO_size{ fifo_size }, OpenCL{ realize_with_OpenCL }, dpn{ _dpn }, id{ _id } {
+	Actor_Generator(std::string path_to_actor, int fifo_size, bool realize_with_OpenCL, Dataflow_Network *_dpn, std::string _id) :token_producer{ path_to_actor }, FIFO_size{ fifo_size }, OpenCL{ realize_with_OpenCL }, dpn{ _dpn }, id{ _id } {
 		//declare build in functions in the map
 		symbol_definition_map_for_actor["print"] = "function";
 		symbol_definition_map_for_actor["println"] = "function";

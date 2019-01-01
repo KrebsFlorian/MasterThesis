@@ -359,7 +359,7 @@ void Converter::create_main(Dataflow_Network *dpn, std::string path, program_opt
 		if (actor_inf.OpenCL) {
 			//update fifo with the results of the previous run
 			first_part.append("\t\tif(" + *it + "_status.get_info<cl::sycl::info::event::command_execution_status>() == cl::sycl::info::event_command_status::complete && !" + *it + "_running.test_and_set()) {\n");
-			first_part.append("\t\t\tif ("/*+*it+"_status.get_info<cl::sycl::info::event::command_execution_status>() == cl::sycl::info::event_command_status::complete &&"*/+"update_buffer_"+*it+") {\n");
+			first_part.append("\t\t\tif(update_buffer_"+*it+") {\n");
 			std::set<std::string> ingoing{ find_ingoing_ports(*it,dpn) };
 			for (auto in = ingoing.begin(); in != ingoing.end(); ++in) {
 				first_part.append("\t\t\t\t" + *in + ".sycl_read_done();\n");

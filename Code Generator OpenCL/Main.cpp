@@ -10,7 +10,7 @@ using namespace std;
 program_options* parse_command_line_input(int argc, char *argv[]) {
 
 	program_options *opt = new program_options;
-	
+
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-i") == 0) {
 			opt->native_includes.push_back(argv[++i]);
